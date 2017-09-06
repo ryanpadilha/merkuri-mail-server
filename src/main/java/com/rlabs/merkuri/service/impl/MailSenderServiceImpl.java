@@ -33,7 +33,7 @@ public class MailSenderServiceImpl implements MailSenderService {
 
 	@Override
 	public void send(Email email) {
-		Objects.requireNonNull(email, "Email object is null");
+		Objects.requireNonNull(email, "Email must not be null.");
 
 		if (email.isHtml()) {
 			try {

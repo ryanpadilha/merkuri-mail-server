@@ -1,14 +1,20 @@
 package com.rlabs.merkuri.resource.impl;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.rlabs.merkuri.amqp.QueueConsumer;
+import com.rlabs.merkuri.amqp.QueueProducer;
+import com.rlabs.merkuri.commons.Constants;
 import com.rlabs.merkuri.entity.model.Email;
 import com.rlabs.merkuri.entity.model.EmailTemplate;
 import com.rlabs.merkuri.resource.MailResource;
@@ -29,34 +35,70 @@ import com.rlabs.merkuri.service.MailSenderService;
 @RequestMapping(value = "/api/v1/email")
 public class MailResourceImpl implements MailResource {
 
-	private static String SAMPLE_HTML = "sample-mail.html";
-	private static String SAMPLE_TEXT = "sample-mail.txt";
-
 	@Autowired
 	private MailSenderService service;
 
-	@RequestMapping(value = "/sample/send/html", method = RequestMethod.GET)
-	public void sampleHtmlMail() {
-		sampleMail(SAMPLE_HTML, true);
+	@RequestMapping(value = "/sample/asyncsend/{type}", method = RequestMethod.POST)
+	public void sendSampleAsyncMail(@PathVariable(name = "type", required = true) String type) {
+
+		// TODO refactoring it!
+		try {
+			final QueueConsumer consumer = new QueueConsumer(Constants.AMQP_QUEUE_DEFAULT);
+			final Thread consumerThread = new Thread(consumer);
+			consumerThread.start();
+
+			Email sampleMail = null;
+			if ("html".equalsIgnoreCase(type)) {
+				sampleMail = sampleMail(Constants.SAMPLE_HTML, true);
+			} else {
+				sampleMail = sampleMail(Constants.SAMPLE_TEXT, false);
+			}
+
+			if (null != sampleMail) {
+				final QueueProducer producer = new QueueProducer(Constants.AMQP_QUEUE_DEFAULT);
+				producer.sendMessage(sampleMail);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			e.printStackTrace();
+		}
 	}
 
-	@RequestMapping(value = "/sample/send/text", method = RequestMethod.GET)
-	public void sampleTextMail() {
-		sampleMail(SAMPLE_TEXT, false);
+	/**
+	 * Synchronous sample email sender.
+	 *
+	 * @param type
+	 */
+	@RequestMapping(value = "/sample/syncsend/{type}", method = RequestMethod.POST)
+	public void sendSampleSyncMail(@PathVariable(name = "type", required = true) String type) {
+		Email sampleMail = null;
+
+		if ("html".equalsIgnoreCase(type)) {
+			sampleMail = sampleMail(Constants.SAMPLE_HTML, true);
+		} else {
+			sampleMail = sampleMail(Constants.SAMPLE_TEXT, false);
+		}
+
+		if (null != sampleMail) {
+			sendEmail(sampleMail);
+		}
 	}
 
-	private void sampleMail(String filename, boolean isHtml) {
-		String from = "ryan@localhost";
-		String to = "padilha@localhost";
-		String subject = "Sample Mail Sender Service" + (isHtml ? " | HTML" : " | TEXT");
+	private Email sampleMail(String filename, boolean isHtml) {
+		final String subject = Constants.SAMPLE_SUBJECT + (isHtml ? " | HTML" : " | TEXT");
 
 		final EmailTemplate template = new EmailTemplate(filename);
 		final Map<String, String> replacements = new HashMap<>();
-		replacements.put("user", "Ryan Padilha");
+		replacements.put("user", Constants.SAMPLE_USER);
 		replacements.put("today", String.valueOf(new Date()));
 
 		final String message = template.getTemplate(replacements);
-		final Email email = new Email(from, to, subject, message, isHtml);
+		final Email email = new Email(Constants.SAMPLE_FROM, Constants.SAMPLE_TO, subject, message, isHtml);
+		return email;
+	}
+
+	private void sendEmail(final Email email) {
 		service.send(email);
 	}
 }

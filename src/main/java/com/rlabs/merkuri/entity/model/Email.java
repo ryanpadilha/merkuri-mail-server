@@ -1,5 +1,6 @@
 package com.rlabs.merkuri.entity.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,7 +12,9 @@ import java.util.List;
  * @since 0.0.1
  *
  */
-public final class Email {
+public final class Email implements Serializable {
+
+	private static final long serialVersionUID = -2854635895650514709L;
 
 	private String from;
 	private List<String> to = new ArrayList<>();
@@ -19,6 +22,10 @@ public final class Email {
 	private String subject;
 	private String message;
 	private boolean isHtml;
+
+	public Email() {
+
+	}
 
 	public Email(String from, String toList, String subject, String message, boolean isHtml) {
 		this.from = from;
@@ -79,6 +86,12 @@ public final class Email {
 
 	public void setHtml(boolean isHtml) {
 		this.isHtml = isHtml;
+	}
+
+	@Override
+	public String toString() {
+		return "Email [from=" + from + ", to=" + to + ", cc=" + cc + ", subject=" + subject + ", message=" + message
+				+ ", isHtml=" + isHtml + "]";
 	}
 
 }
