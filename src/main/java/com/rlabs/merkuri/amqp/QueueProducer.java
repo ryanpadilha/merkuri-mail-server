@@ -1,10 +1,13 @@
 package com.rlabs.merkuri.amqp;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.commons.lang.SerializationUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rlabs.merkuri.entity.model.MailStructure;
 
 /**
  * AMQP producer that writes to the queue.
@@ -13,14 +16,22 @@ import org.apache.commons.lang.SerializationUtils;
  * @since 0.0.1
  *
  */
-public class QueueProducer extends ServerEndpointAMQP {
+public class QueueProducer extends AMQPServerEndpoint {
 
-	public QueueProducer(String queueName) throws IOException, TimeoutException {
+	private static final Logger LOGGER = LoggerFactory.getLogger(QueueProducer.class);
+
+	public QueueProducer(String queueName) {
 		super(queueName);
 	}
 
-	public void sendMessage(Serializable object) throws IOException {
-		this.channel.basicPublish("", queueName, null, SerializationUtils.serialize(object));
+	public void send(final MailStructure message) {
+		try {
+			open();
+			sendMessage(new ObjectMapper().writeValueAsBytes(message));
+		} catch (IOException | TimeoutException e) {
+			LOGGER.error(e.getMessage(), e);
+		} finally {
+			// close();
+		}
 	}
-
 }

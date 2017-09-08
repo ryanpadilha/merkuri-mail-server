@@ -1,5 +1,7 @@
 package com.rlabs.merkuri.resource;
 
+import com.rlabs.merkuri.entity.model.MailWrapper;
+
 /**
  * The Mail Resource Interface.
  *
@@ -8,5 +10,9 @@ package com.rlabs.merkuri.resource;
  *
  */
 public interface MailResource {
+
+	MailWrapper sendSampleAsyncMail(String type);
+
+	MailWrapper sendSampleSyncMail(String type);
 
 }

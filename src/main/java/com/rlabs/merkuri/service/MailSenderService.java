@@ -1,6 +1,6 @@
 package com.rlabs.merkuri.service;
 
-import com.rlabs.merkuri.entity.model.Email;
+import com.rlabs.merkuri.entity.model.MailStructure;
 
 /**
  * Mail Sender Service Interface.
@@ -11,6 +11,8 @@ import com.rlabs.merkuri.entity.model.Email;
  */
 public interface MailSenderService {
 
-	void send(Email email);
+	void send(MailStructure email);
+
+	MailStructure buildSampleTemplateMail(String filename, boolean isHtml);
 
 }

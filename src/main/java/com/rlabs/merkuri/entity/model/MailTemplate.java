@@ -18,15 +18,19 @@ import org.slf4j.LoggerFactory;
  * @since 0.0.1
  *
  */
-public class EmailTemplate {
+public class MailTemplate {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(EmailTemplate.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(MailTemplate.class);
+
+	/**
+	 * TODO one suggestion is use org.thymeleaf.TemplateEngine for templates
+	 */
 
 	private String filename;
 	private String content;
 	private Map<String, String> replacementParams;
 
-	public EmailTemplate(String filename) {
+	public MailTemplate(String filename) {
 		this.filename = filename;
 		this.content = loadTemplate(filename);
 	}
@@ -47,7 +51,7 @@ public class EmailTemplate {
 		String content = StringUtils.EMPTY;
 
 		try {
-			final URL resource = this.getClass().getClassLoader().getResource("templates/" + filename);
+			final URL resource = this.getClass().getClassLoader().getResource("templates/email/" + filename);
 			if (null == resource) {
 				throw new IOException("Template filename provided not found on resource folder.");
 			}

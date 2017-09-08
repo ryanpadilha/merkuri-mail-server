@@ -34,5 +34,7 @@ public final class Constants {
 	public static final String AMQP_USERNAME = "tvvmwcrt";
 	public static final String AMQP_PASSWORD = "UAAQXvnzAeI0A7o1PrW3TsS9QSOVSK0D";
 	public static final String AMQP_QUEUE_DEFAULT = "merkuri-queue";
+	public static final int AMQP_TIMEOUT = 30000;
+	public static final int AMQP_RECONNECT = 2000;
 
 }

@@ -1,15 +1,17 @@
 package com.rlabs.merkuri.amqp;
 
 import java.io.IOException;
-import java.util.concurrent.TimeoutException;
 
-import org.apache.commons.lang.SerializationUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
-import com.rlabs.merkuri.entity.model.Email;
+import com.rlabs.merkuri.entity.model.MailStructure;
 import com.rlabs.merkuri.service.MailSenderService;
 import com.rlabs.merkuri.service.impl.MailSenderServiceImpl;
 
@@ -20,15 +22,17 @@ import com.rlabs.merkuri.service.impl.MailSenderServiceImpl;
  * @since 0.0.1
  *
  */
-public class QueueConsumer extends ServerEndpointAMQP implements Runnable, Consumer {
+public class QueueConsumer extends AMQPServerEndpoint implements Runnable, Consumer {
 
-	public QueueConsumer(String queueName) throws IOException, TimeoutException {
+	private static final Logger LOGGER = LoggerFactory.getLogger(QueueConsumer.class);
+
+	public QueueConsumer(String queueName) {
 		super(queueName);
 	}
 
 	@Override
 	public void handleConsumeOk(String consumerTag) {
-		System.out.println(String.format("Consumer registered %s", consumerTag));
+		LOGGER.info(String.format("Consumer registered %s", consumerTag));
 	}
 
 	@Override
@@ -44,18 +48,13 @@ public class QueueConsumer extends ServerEndpointAMQP implements Runnable, Consu
 	@Override
 	public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties props, byte[] body)
 			throws IOException {
-		Email email = null;
-		Object object = SerializationUtils.deserialize(body);
-		Class<? extends Object> clazz = object.getClass();
-
-		if (clazz.isInstance(object)) {
-			email = (Email) object;
-		}
+		final ObjectReader reader = new ObjectMapper().readerFor(MailStructure.class);
+		final MailStructure mailMessage = (MailStructure) reader.readValue(body);
 
 		final MailSenderService mailSenderService = new MailSenderServiceImpl();
-		mailSenderService.send(email);
+		mailSenderService.send(mailMessage);
 
-		System.out.println(String.format("Processing message email %s", email));
+		LOGGER.info(String.format("Processing message mail %s", mailMessage));
 	}
 
 	@Override
@@ -68,13 +67,18 @@ public class QueueConsumer extends ServerEndpointAMQP implements Runnable, Consu
 
 	}
 
+	/**
+	 * start consuming messages. Auto acknowledge messages.
+	 */
 	@Override
 	public void run() {
 		try {
-			// start consuming messages. Auto acknowledge messages.
-			this.channel.basicConsume(queueName, true, this);
+			open();
+			getChannel().basicConsume(getQueueName(), true, this);
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOGGER.error(e.getMessage(), e);
+		} finally {
+			// close();
 		}
 	}
 

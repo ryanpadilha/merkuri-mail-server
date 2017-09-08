@@ -6,13 +6,13 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Email Model Java Bean.
+ * Email Structure Model Java Bean.
  *
  * @author Ryan Padilha <ryan.padilha@gmail.com>
  * @since 0.0.1
  *
  */
-public final class Email implements Serializable {
+public final class MailStructure implements Serializable {
 
 	private static final long serialVersionUID = -2854635895650514709L;
 
@@ -23,11 +23,11 @@ public final class Email implements Serializable {
 	private String message;
 	private boolean isHtml;
 
-	public Email() {
+	public MailStructure() {
 
 	}
 
-	public Email(String from, String toList, String subject, String message, boolean isHtml) {
+	public MailStructure(String from, String toList, String subject, String message, boolean isHtml) {
 		this.from = from;
 		this.to.addAll(Arrays.asList(toList.split(",")));
 		this.subject = subject;
@@ -35,7 +35,7 @@ public final class Email implements Serializable {
 		this.isHtml = isHtml;
 	}
 
-	public Email(String from, String toList, String ccList, String subject, String message, boolean isHtml) {
+	public MailStructure(String from, String toList, String ccList, String subject, String message, boolean isHtml) {
 		this(from, toList, subject, message, isHtml);
 		this.cc.addAll(Arrays.asList(ccList.split(",")));
 	}
@@ -90,8 +90,8 @@ public final class Email implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Email [from=" + from + ", to=" + to + ", cc=" + cc + ", subject=" + subject + ", message=" + message
-				+ ", isHtml=" + isHtml + "]";
+		return "MailStructure [from=" + from + ", to=" + to + ", cc=" + cc + ", subject=" + subject + ", message="
+				+ message + ", isHtml=" + isHtml + "]";
 	}
 
 }
