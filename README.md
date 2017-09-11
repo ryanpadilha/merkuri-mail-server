@@ -3,12 +3,17 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Merkuri Mail Server integrate with Message Broker for assincronos processing and auto-scaling.
+The goal of this project is transparently group all template mails for all applications.
+
+#### NOTE
+This project is under development, the next steps is decouple server and client connector adapter for AMQP processing.
 
 ### Requirements
 
 - Java 1.8 or later.
 - Maven 3.x or later.
-
+- SMTP server email account.
+- RabbitMQ Server 3.x or later.
 
 ## License
 
