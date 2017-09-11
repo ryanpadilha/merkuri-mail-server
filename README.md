@@ -2,8 +2,8 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Merkuri Mail Server integrate with Message Broker for assincronos processing and auto-scaling.
-The goal of this project is transparently group all template mails for all applications.
+Merkuri Mail Server integrate with Message Broker for assincronos processing and auto-scaling.<br>
+The goal of this project is provide transparently email templates for any kind of application and send it asynchronous.
 
 #### NOTE
 This project is under development, the next steps is decouple server and client connector adapter for AMQP processing.
