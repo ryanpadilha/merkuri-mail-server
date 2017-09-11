@@ -6,12 +6,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.rlabs.merkuri.amqp.QueueConsumer;
-import com.rlabs.merkuri.amqp.QueueProducer;
-import com.rlabs.merkuri.commons.Constants;
 import com.rlabs.merkuri.entity.model.MailStructure;
 import com.rlabs.merkuri.entity.model.MailWrapper;
 import com.rlabs.merkuri.resource.MailResource;
+import com.rlabs.merkuri.service.AMQPIntegratorService;
 import com.rlabs.merkuri.service.MailSenderService;
 
 /**
@@ -32,20 +30,16 @@ public class MailResourceImpl implements MailResource {
 	@Autowired
 	private MailSenderService service;
 
+	@Autowired
+	private AMQPIntegratorService integratorService;
+
 	@RequestMapping(value = "/sample/asyncsend/{type}", method = RequestMethod.POST)
 	@Override
 	public MailWrapper sendSampleAsyncMail(@PathVariable(name = "type", required = true) String type) {
-
-		// TODO refactoring it!
-		final QueueConsumer consumer = new QueueConsumer(Constants.AMQP_QUEUE_DEFAULT);
-		final Thread consumerThread = new Thread(consumer);
-		consumerThread.start();
-
-		final MailStructure sampleMail = buildStructure(type);
+		final MailStructure sampleMail = service.buildStructure(type);
 
 		if (null != sampleMail) {
-			final QueueProducer producer = new QueueProducer(Constants.AMQP_QUEUE_DEFAULT);
-			producer.send(sampleMail);
+			integratorService.queueMessage(sampleMail);
 		}
 
 		final MailWrapper mailWrapper = new MailWrapper();
@@ -63,25 +57,14 @@ public class MailResourceImpl implements MailResource {
 	@RequestMapping(value = "/sample/syncsend/{type}", method = RequestMethod.POST)
 	@Override
 	public MailWrapper sendSampleSyncMail(@PathVariable(name = "type", required = true) String type) {
-		service.send(buildStructure(type));
+		final MailStructure sampleMail = service.buildStructure(type);
+		service.send(sampleMail);
 
 		final MailWrapper mailWrapper = new MailWrapper();
 		mailWrapper.setRequestType("sync");
 		// TODO implement other fields
 
 		return mailWrapper;
-	}
-
-	private MailStructure buildStructure(final String type) {
-		MailStructure sampleMail = null;
-
-		if ("html".equalsIgnoreCase(type)) {
-			sampleMail = service.buildSampleTemplateMail(Constants.SAMPLE_HTML, true);
-		} else {
-			sampleMail = service.buildSampleTemplateMail(Constants.SAMPLE_TEXT, false);
-		}
-
-		return sampleMail;
 	}
 
 }

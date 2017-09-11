@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
@@ -79,11 +78,6 @@ public class MailSenderServiceImpl implements MailSenderService {
 	 * @throws MessagingException
 	 */
 	private void sendHtmlMail(final MailStructure email) {
-		// FIXME instance is manually for rabbitmq-server
-		if (null == sender) {
-			sender = new JavaMailSenderImpl();
-		}
-
 		final MimeMessage message = sender.createMimeMessage();
 		final MimeMessageHelper helper = new MimeMessageHelper(message);
 
@@ -140,4 +134,15 @@ public class MailSenderServiceImpl implements MailSenderService {
 		}
 	}
 
+	public MailStructure buildStructure(final String type) {
+		MailStructure sampleMail = null;
+
+		if ("html".equalsIgnoreCase(type)) {
+			sampleMail = buildSampleTemplateMail(Constants.SAMPLE_HTML, true);
+		} else {
+			sampleMail = buildSampleTemplateMail(Constants.SAMPLE_TEXT, false);
+		}
+
+		return sampleMail;
+	}
 }

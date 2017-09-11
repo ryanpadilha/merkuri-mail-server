@@ -15,4 +15,5 @@ public interface MailSenderService {
 
 	MailStructure buildSampleTemplateMail(String filename, boolean isHtml);
 
+	MailStructure buildStructure(String type);
 }

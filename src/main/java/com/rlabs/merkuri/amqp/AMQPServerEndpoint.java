@@ -35,9 +35,7 @@ public abstract class AMQPServerEndpoint {
 	private static int tCounter = 0;
 	private ExecutorService executor = Executors.newFixedThreadPool(2);
 
-	public AMQPServerEndpoint(String queueName) {
-		this.queueName = queueName;
-
+	public AMQPServerEndpoint() {
 		final ConnectionFactory factory = new ConnectionFactory();
 		factory.setAutomaticRecoveryEnabled(true);
 		factory.setTopologyRecoveryEnabled(true);
@@ -55,6 +53,11 @@ public abstract class AMQPServerEndpoint {
 		});
 
 		this.factory = factory;
+	}
+
+	public AMQPServerEndpoint(String queueName) {
+		this();
+		this.queueName = queueName;
 	}
 
 	public void open() throws IOException, TimeoutException {
@@ -84,11 +87,14 @@ public abstract class AMQPServerEndpoint {
 		return this.factory.newConnection(this.executor);
 	}
 
+	/**
+	 * declare a queue for this channel, if not exits, it will created on server
+	 *
+	 * @return
+	 * @throws IOException
+	 */
 	private Channel createChannel() throws IOException {
 		final Channel channelQ = this.connection.createChannel();
-
-		// declare a queue for this channel
-		// if not exits, it will created on server
 		channelQ.queueDeclare(queueName, false, false, false, null);
 		return channelQ;
 	}
@@ -108,6 +114,10 @@ public abstract class AMQPServerEndpoint {
 
 	public Channel getChannel() {
 		return channel;
+	}
+
+	public void setQueueName(String queueName) {
+		this.queueName = queueName;
 	}
 
 	public String getQueueName() {

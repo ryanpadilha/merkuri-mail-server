@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -13,7 +15,6 @@ import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
 import com.rlabs.merkuri.entity.model.MailStructure;
 import com.rlabs.merkuri.service.MailSenderService;
-import com.rlabs.merkuri.service.impl.MailSenderServiceImpl;
 
 /**
  * AMQP endpoint that consumes messages off to the queue.
@@ -22,9 +23,17 @@ import com.rlabs.merkuri.service.impl.MailSenderServiceImpl;
  * @since 0.0.1
  *
  */
+@Component
 public class QueueConsumer extends AMQPServerEndpoint implements Runnable, Consumer {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(QueueConsumer.class);
+
+	@Autowired
+	private MailSenderService mailSenderService;
+
+	public QueueConsumer() {
+
+	}
 
 	public QueueConsumer(String queueName) {
 		super(queueName);
@@ -51,9 +60,7 @@ public class QueueConsumer extends AMQPServerEndpoint implements Runnable, Consu
 		final ObjectReader reader = new ObjectMapper().readerFor(MailStructure.class);
 		final MailStructure mailMessage = (MailStructure) reader.readValue(body);
 
-		final MailSenderService mailSenderService = new MailSenderServiceImpl();
 		mailSenderService.send(mailMessage);
-
 		LOGGER.info(String.format("Processing message mail %s", mailMessage));
 	}
 
